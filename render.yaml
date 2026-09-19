@@ -1,0 +1,25 @@
+# Render Blueprint: creates the PostgreSQL database and the web service together.
+databases:
+  - name: stockroom-db
+    databaseName: stockroom
+    user: stockroom
+    plan: free
+
+services:
+  - type: web
+    name: stockroom
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 1 --threads 4 --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: DATABASE_URL
+        fromDatabase:
+          name: stockroom-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false   # Render asks you for this value when you create the Blueprint
